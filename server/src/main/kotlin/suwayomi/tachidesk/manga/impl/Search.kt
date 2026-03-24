@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import suwayomi.tachidesk.manga.impl.MangaList.processEntries
 import suwayomi.tachidesk.manga.impl.util.source.GetCatalogueSource.getCatalogueSourceOrStub
 import suwayomi.tachidesk.manga.model.dataclass.PagedMangaListDataClass
+import suwayomi.tachidesk.manga.model.dataclass.WorkSearchResultDataClass
 import uy.kohesive.injekt.injectLazy
 
 object Search {
@@ -188,8 +189,5 @@ object Search {
         val filter: List<FilterChange>?,
     )
 
-    @Suppress("UNUSED_PARAMETER")
-    fun sourceGlobalSearch(searchTerm: String) {
-        // TODO
-    }
+    suspend fun sourceGlobalSearch(searchTerm: String): WorkSearchResultDataClass = WorkSearch.search(searchTerm)
 }

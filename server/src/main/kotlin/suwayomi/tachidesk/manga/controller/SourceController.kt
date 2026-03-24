@@ -15,7 +15,9 @@ import suwayomi.tachidesk.manga.impl.Search.FilterChange
 import suwayomi.tachidesk.manga.impl.Search.FilterData
 import suwayomi.tachidesk.manga.impl.Source
 import suwayomi.tachidesk.manga.impl.Source.SourcePreferenceChange
+import suwayomi.tachidesk.manga.impl.WorkSearch
 import suwayomi.tachidesk.manga.model.dataclass.PagedMangaListDataClass
+import suwayomi.tachidesk.manga.model.dataclass.SourcePolicyDataClass
 import suwayomi.tachidesk.manga.model.dataclass.SourceDataClass
 import suwayomi.tachidesk.server.JavalinSetup.Attribute
 import suwayomi.tachidesk.server.JavalinSetup.future
@@ -174,6 +176,46 @@ object SourceController {
             },
         )
 
+    /** fetch aggregation policy of source with id `sourceId` */
+    val getPolicy =
+        handler(
+            pathParam<Long>("sourceId"),
+            documentWith = {
+                withOperation {
+                    summary("Source aggregation policy")
+                    description("Fetch the aggregation/search policy of source with id `sourceId`.")
+                }
+            },
+            behaviorOf = { ctx, sourceId ->
+                ctx.getAttribute(Attribute.TachideskUser).requireUser()
+                ctx.json(WorkSearch.getSourcePolicy(sourceId))
+            },
+            withResults = {
+                json<SourcePolicyDataClass>(HttpStatus.OK)
+            },
+        )
+
+    /** update aggregation policy of source with id `sourceId` */
+    val updatePolicy =
+        handler(
+            pathParam<Long>("sourceId"),
+            documentWith = {
+                withOperation {
+                    summary("Source aggregation policy update")
+                    description("Update the aggregation/search policy of source with id `sourceId`.")
+                }
+                body<WorkSearch.SourcePolicyPatchInput>()
+            },
+            behaviorOf = { ctx, sourceId ->
+                ctx.getAttribute(Attribute.TachideskUser).requireUser()
+                val input = json.decodeFromString<WorkSearch.SourcePolicyPatchInput>(ctx.body())
+                ctx.json(WorkSearch.updateSourcePolicy(sourceId, input))
+            },
+            withResults = {
+                json<SourcePolicyDataClass>(HttpStatus.OK)
+            },
+        )
+
     private val json: Json by injectLazy()
 
     /** change filters of source with id `sourceId` */
@@ -265,8 +307,10 @@ object SourceController {
             },
             behaviorOf = { ctx, searchTerm ->
                 ctx.getAttribute(Attribute.TachideskUser).requireUser()
-                // TODO
-                ctx.json(Search.sourceGlobalSearch(searchTerm))
+                ctx.future {
+                    future { Search.sourceGlobalSearch(searchTerm) }
+                        .thenApply { ctx.json(it) }
+                }
             },
             withResults = {
                 httpCode(HttpStatus.OK)

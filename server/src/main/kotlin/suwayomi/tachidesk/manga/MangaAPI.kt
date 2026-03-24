@@ -23,6 +23,7 @@ import suwayomi.tachidesk.manga.controller.MangaController
 import suwayomi.tachidesk.manga.controller.SourceController
 import suwayomi.tachidesk.manga.controller.TrackController
 import suwayomi.tachidesk.manga.controller.UpdateController
+import suwayomi.tachidesk.manga.controller.WorkController
 
 object MangaAPI {
     fun defineEndpoints() {
@@ -46,6 +47,8 @@ object MangaAPI {
 
             get("{sourceId}/preferences", SourceController.getPreferences)
             post("{sourceId}/preferences", SourceController.setPreference)
+            get("{sourceId}/policy", SourceController.getPolicy)
+            patch("{sourceId}/policy", SourceController.updatePolicy)
 
             get("{sourceId}/filters", SourceController.getFilters)
             post("{sourceId}/filters", SourceController.setFilters)
@@ -53,6 +56,17 @@ object MangaAPI {
             get("{sourceId}/search", SourceController.searchSingle)
             post("{sourceId}/quick-search", SourceController.quickSearchSingle)
 //            get("all/search", SourceController.searchGlobal) // TODO
+        }
+
+        path("search") {
+            get("", WorkController.search)
+        }
+
+        path("work") {
+            get("{workId}", WorkController.retrieve)
+            get("{workId}/sources", WorkController.sources)
+            post("merge", WorkController.merge)
+            post("{workId}/alias", WorkController.addAlias)
         }
 
         path("manga") {
