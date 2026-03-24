@@ -9,6 +9,7 @@ package suwayomi.tachidesk.manga.controller
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.http.HttpStatus
+import suwayomi.tachidesk.manga.impl.WorkSearch
 import suwayomi.tachidesk.manga.impl.extension.Extension
 import suwayomi.tachidesk.manga.impl.extension.ExtensionsList
 import suwayomi.tachidesk.manga.model.dataclass.ExtensionDataClass
@@ -125,6 +126,7 @@ object ExtensionController {
                 ctx.getAttribute(Attribute.TachideskUser).requireUser()
                 ctx.future {
                     future {
+                        WorkSearch.ensureExtensionMutationAllowed(pkgName)
                         Extension.updateExtension(pkgName)
                     }.thenApply {
                         ctx.status(it)
@@ -151,6 +153,7 @@ object ExtensionController {
             },
             behaviorOf = { ctx, pkgName ->
                 ctx.getAttribute(Attribute.TachideskUser).requireUser()
+                WorkSearch.ensureExtensionMutationAllowed(pkgName)
                 Extension.uninstallExtension(pkgName)
                 ctx.status(200)
             },
